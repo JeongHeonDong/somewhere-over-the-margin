@@ -80,9 +80,9 @@ transform = transforms.Compose(
 batch_size = 256
 
 train_dataset = datasets.MNIST(
-    "datasets/MNIST", train=True, download=True, transform=transform)
+    "data/MNIST", train=True, download=True, transform=transform)
 test_dataset = datasets.MNIST(
-    "datasets/MNIST", train=False, download=True, transform=transform)
+    "data/MNIST", train=False, download=True, transform=transform)
 
 train_loader = torch.utils.data.DataLoader(
     train_dataset,

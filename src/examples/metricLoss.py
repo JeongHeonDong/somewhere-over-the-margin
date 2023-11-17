@@ -73,21 +73,21 @@ embedder_optimizer = torch.optim.Adam(
 # 2-5. Set the image transforms for CIFAR 100
 train_transform = transforms.Compose(
     [
-        transforms.Resize(64),
+        transforms.Resize((64, 64)),
         transforms.RandomResizedCrop(
             scale=(0.16, 1), ratio=(0.75, 1.33), size=64),
         transforms.RandomHorizontalFlip(0.5),
         transforms.ToTensor(),
-        transforms.Normalize(mean=[0.5071, 0.4867, 0.4408], std=[
-                             0.2675, 0.2565, 0.2761]),
+        transforms.Normalize(mean=[0.4857, 0.4995, 0.4324], std=[
+                             0.1606, 0.1600, 0.1717]),
     ]
 )
 val_transform = transforms.Compose(
     [
-        transforms.Resize(64),
+        transforms.Resize((64, 64)),
         transforms.ToTensor(),
-        transforms.Normalize(mean=[0.5071, 0.4867, 0.4408], std=[
-                             0.2675, 0.2565, 0.2761]),
+        transforms.Normalize(mean=[0.4857, 0.4995, 0.4324], std=[
+                             0.1606, 0.1600, 0.1717]),
     ]
 )
 
@@ -96,13 +96,13 @@ val_transform = transforms.Compose(
 
 # 3-1. Download the original CIFAR 100 dataset
 original_train_dataset = datasets.CIFAR100(
-    root="datasets/CIFAR100",
+    root="data/CIFAR100",
     train=True,
     transform=None,
     download=True,
 )
 original_val_dataset = datasets.CIFAR100(
-    root="datasets/CIFAR100",
+    root="data/CIFAR100",
     train=False,
     transform=None,
     download=True,

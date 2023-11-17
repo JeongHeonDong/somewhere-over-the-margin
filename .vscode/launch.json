@@ -5,6 +5,20 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Base",
+      "type": "python",
+      "request": "launch",
+      "module": "src.base",
+      "justMyCode": true
+    },
+    {
+      "name": "Calculate Mean and Std",
+      "type": "python",
+      "request": "launch",
+      "module": "src.utils.calc_mean_std",
+      "justMyCode": true
+    },
+    {
       "name": "Example: Simple Triplet Margin Loss (MNIST)",
       "type": "python",
       "request": "launch",
