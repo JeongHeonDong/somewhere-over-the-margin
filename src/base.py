@@ -13,6 +13,7 @@ import pytorch_metric_learning.utils.logging_presets as logging_presets
 from pytorch_metric_learning.utils.accuracy_calculator import AccuracyCalculator
 from pytorch_metric_learning import distances, losses, miners, reducers, testers, trainers
 
+from src.utils.dataset.sop import SOP
 from src.utils.dataset.cub import CUB
 
 # 0. Set the path, log, and device
@@ -49,6 +50,10 @@ train_dataset = CUB(root="data/CUB_200_2011",
 test_dataset = CUB(root="data/CUB_200_2011",
                    mode="eval", transform=test_transform)
 
+# train_dataset = SOP(root="data/SOP",
+#                     mode="train", transform=train_transform)
+# test_dataset = SOP(root="data/SOP",
+#                    mode="eval", transform=test_transform)
 
 # 2. Set the model, optimizer
 trunk = torchvision.models.resnet18(pretrained=True)
