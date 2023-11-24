@@ -17,6 +17,18 @@ In metric learning field, margin-based hinging is the golden rule. In this proje
 
 you can find the full list of dependencies in `dependencies.txt`.
 
+### Setup Guide
+
+```base
+$ conda create -n cv-project python=3.8.16
+$ conda install pytorch==1.6.0 torchvision==0.7.0 cudatoolkit=10.2 -c pytorch
+$ conda install -c conda-forge pytorch-metric-learning
+$ conda install matplotlib tensorboard
+$ conda install -c conda-forge umap-learn
+$ conda install -c pytorch faiss-cpu=1.7.4 mkl=2021 blas=1.0=mkl
+$ pip install record-keeper
+```
+
 ## Reference
 
 - pytorch-metric-learning: [🔗 Link](https://github.com/KevinMusgrave/pytorch-metric-learning)
