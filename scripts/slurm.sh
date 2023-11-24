@@ -10,10 +10,10 @@
 #SBATCH --gres=gpu:2
 
 #### Select node (change nodelist at your circumstances)
-#SBATCH --nodelist=n1
+#SBATCH --nodelist=n9
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=1
+#SBATCH --cpus-per-task=6
 
 cd  $SLURM_SUBMIT_DIR
 echo "SLURM_SUBMIT_DIR=$SLURM_SUBMIT_DIR"
@@ -34,7 +34,10 @@ echo "conda activate cv-project"
 conda activate cv-project
 
 SAMPLES_DIR=$HOME/somewhere-over-the-margin/
-python3 $SAMPLES_DIR/src/examples/tripletMarginLossMNIST.py
+cd $SAMPLES_DIR
+
+### Modify this line when you want other jobs
+python -m src.examples.tripletMarginLossMNIST
 
 date
 
