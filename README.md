@@ -4,7 +4,7 @@ In metric learning field, margin-based hinging is the golden rule. In this proje
 
 ## Dependencies
 
-- Python 3.8.16
+- python 3.8.16
 - pytorch 1.6.0
 - torchvision 0.7.0
 - pytorch-metric-learning 2.3.0
@@ -19,4 +19,4 @@ you can find the full list of dependencies in `dependencies.txt`.
 
 ## Reference
 
-- pytorch-metric-learning: [🔗 Link](github.com/KevinMusgrave/pytorch-metric-learning)
+- pytorch-metric-learning: [🔗 Link](https://github.com/KevinMusgrave/pytorch-metric-learning)

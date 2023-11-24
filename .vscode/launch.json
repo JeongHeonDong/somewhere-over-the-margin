@@ -31,6 +31,13 @@
       "request": "launch",
       "module": "src.examples.metricLoss",
       "justMyCode": true
+    },
+    {
+      "name": "Example: Custom Triplet Margin Loss",
+      "type": "python",
+      "request": "launch",
+      "module": "src.examples.customTripletMarginLoss",
+      "justMyCode": true
     }
   ]
 }
