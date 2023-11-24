@@ -21,11 +21,12 @@ you can find the full list of dependencies in `dependencies.txt`.
 
 ```base
 $ conda create -n cv-project python=3.8.16
-$ conda install pytorch==1.6.0 torchvision==0.7.0 cudatoolkit=10.2 -c pytorch
-$ conda install -c conda-forge pytorch-metric-learning
-$ conda install matplotlib tensorboard
-$ conda install -c conda-forge umap-learn
-$ conda install -c pytorch faiss-cpu=1.7.4 mkl=2021 blas=1.0=mkl
+$ conda activate cv-project
+$ conda install pytorch==1.6.0 torchvision==0.7.0 cudatoolkit=10.2 -c pytorch -y
+$ conda install -c conda-forge pytorch-metric-learning -y
+$ conda install matplotlib tensorboard -y
+$ conda install -c conda-forge umap-learn -y
+$ conda install -c pytorch faiss-cpu=1.7.4 mkl=2021 blas=1.0=mkl -y
 $ pip install record-keeper
 ```
 
