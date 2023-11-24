@@ -1,0 +1,36 @@
+Downloading http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz to data/MNIST/MNIST/raw/train-images-idx3-ubyte.gz
+Extracting data/MNIST/MNIST/raw/train-images-idx3-ubyte.gz to data/MNIST/MNIST/raw
+Downloading http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz to data/MNIST/MNIST/raw/train-labels-idx1-ubyte.gz
+Extracting data/MNIST/MNIST/raw/train-labels-idx1-ubyte.gz to data/MNIST/MNIST/raw
+Downloading http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz to data/MNIST/MNIST/raw/t10k-images-idx3-ubyte.gz
+Extracting data/MNIST/MNIST/raw/t10k-images-idx3-ubyte.gz to data/MNIST/MNIST/raw
+Downloading http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz to data/MNIST/MNIST/raw/t10k-labels-idx1-ubyte.gz
+Extracting data/MNIST/MNIST/raw/t10k-labels-idx1-ubyte.gz to data/MNIST/MNIST/raw
+Processing...
+Done!
+Epoch 1 Iteration 0: Loss = 0.1047632247209549, Number of mined triplets = 826905
+Epoch 1 Iteration 20: Loss = 0.09470628201961517, Number of mined triplets = 135051
+Epoch 1 Iteration 40: Loss = 0.08946291357278824, Number of mined triplets = 87027
+Epoch 1 Iteration 60: Loss = 0.08465437591075897, Number of mined triplets = 50478
+Epoch 1 Iteration 80: Loss = 0.08480440825223923, Number of mined triplets = 39086
+Epoch 1 Iteration 100: Loss = 0.08436905592679977, Number of mined triplets = 42635
+Epoch 1 Iteration 120: Loss = 0.08572538942098618, Number of mined triplets = 38875
+Epoch 1 Iteration 140: Loss = 0.0849936380982399, Number of mined triplets = 30209
+Epoch 1 Iteration 160: Loss = 0.08502043038606644, Number of mined triplets = 31196
+Epoch 1 Iteration 180: Loss = 0.08001478761434555, Number of mined triplets = 23381
+Epoch 1 Iteration 200: Loss = 0.08516693860292435, Number of mined triplets = 33961
+Epoch 1 Iteration 220: Loss = 0.0815279483795166, Number of mined triplets = 22955
+Computing accuracy
+Test set accuracy (Precision@1) = 0.983599975152174
+Epoch 2 Iteration 0: Loss = 0.08335954695940018, Number of mined triplets = 25796
+Epoch 2 Iteration 20: Loss = 0.07983136177062988, Number of mined triplets = 18608
+Epoch 2 Iteration 40: Loss = 0.08510217815637589, Number of mined triplets = 26875
+Epoch 2 Iteration 60: Loss = 0.08331043273210526, Number of mined triplets = 18859
+Epoch 2 Iteration 80: Loss = 0.08103983104228973, Number of mined triplets = 15896
+Epoch 2 Iteration 100: Loss = 0.08328235149383545, Number of mined triplets = 19010
+Epoch 2 Iteration 120: Loss = 0.08243201673030853, Number of mined triplets = 26531
+Epoch 2 Iteration 140: Loss = 0.0829622894525528, Number of mined triplets = 21264
+Epoch 2 Iteration 160: Loss = 0.08435438573360443, Number of mined triplets = 18655
+Epoch 2 Iteration 180: Loss = 0.08136595785617828, Number of mined triplets = 15052
+Epoch 2 Iteration 200: Loss = 0.08149722218513489, Number of mined triplets = 19105
+Epoch 2 Iteration 220: Loss = 0.07583080232143402, Number of mined triplets = 10212
