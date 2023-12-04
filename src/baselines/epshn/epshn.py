@@ -14,7 +14,7 @@ from src.utils.dataset.cub import CUB
 from src.baselines.epshn.model import setModel
 from src.baselines.epshn.loss import EPHNLoss
 from src.baselines.epshn.sampler import BalanceSampler_filled, BalanceSampler_sample
-from src.baselines.epshn.utils import calc_precision_at_1, calc_recall_at_1
+from src.baselines.epshn.utils import get_recall
 
 # 0. Set the path, log, and device
 trial_name = "base"  # you can change this to whatever you want.
@@ -76,7 +76,7 @@ else:
 # 2. Set the model, optimizer
 out_dim = 64
 model_name = "R18"
-lr = 3e-2
+lr = 1e-4
 num_epochs = 100
 n_size = 16
 batch_size = 128
@@ -172,11 +172,10 @@ if __name__ == "__main__":
                 fvec = embedder(fvec.cuda())
                 embeddings = fvec.cpu().detach().numpy()
                 Fvecs.append(embeddings)
+
             Fvecs = np.concatenate(Fvecs, axis=0)
             labels = test_dataset.ys
-            p_at_1 = calc_precision_at_1(Fvecs, labels)
-            r_at_1 = calc_recall_at_1(Fvecs, labels)
-            print('P@1: {:.3f}'.format(p_at_1))
-            print('R@1: {:.3f}'.format(r_at_1))
-            writer.add_scalar('P@1', p_at_1, epoch)
-            writer.add_scalar('R@1', r_at_1, epoch)
+            recalls, k_list = get_recall(Fvecs, labels, dataset)
+            for k, r_at_k in zip(k_list, recalls):
+                writer.add_scalar('R@{}'.format(k), r_at_k, epoch)
+                print('R@{}: {:.3f}'.format(k, r_at_k))

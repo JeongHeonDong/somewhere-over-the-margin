@@ -31,15 +31,19 @@ def calc_recall_at_k(T, Y, k):
     return s / (1. * len(T))
 
 
-def calc_recall_at_1(x, y):
+def get_recall(x, y, ds_name):
     k_list = [1]
     y = torch.Tensor(y)
     x = torch.Tensor(x)
+
+    if ds_name == "CUB":
+        k_list = [1, 2, 4, 8]
+    else:
+        k_list = [1, 10, 100]
 
     dist_m = x @ x.T
 
     y_cur = y[dist_m.topk(1+max(k_list), largest=True)[1][:, 1:]]
 
     recall = [calc_recall_at_k(y, y_cur, k) for k in k_list]
-    print(recall)
-    return recall[0]
+    return recall, k_list

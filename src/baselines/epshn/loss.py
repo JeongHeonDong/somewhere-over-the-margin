@@ -80,5 +80,8 @@ class EPHNLoss(Module):
 
         print('loss:{:.3f} rt:{:.3f}'.format(loss.item(),
               Mask_not_drop.float().mean().item()), end='\r')
+        
+        V_pos = V_pos.detach().cpu()
+        V_neg = V_neg.detach().cpu()
 
         return loss, torch.cat([Pos_log[(V_pos > 0)], torch.Tensor([0, 1])], 0), torch.cat([Neg_log[(V_neg > 0)], torch.Tensor([0, 1])], 0), Pos_log.mean()-Neg_log.mean()
