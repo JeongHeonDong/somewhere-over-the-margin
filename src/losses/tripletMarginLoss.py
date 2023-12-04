@@ -58,6 +58,18 @@ class TripletMarginLoss(BaseMetricLossFunction):
             loss = torch.nn.functional.relu(violation)
         elif self.margin_activation == "leaky_relu":
             loss = torch.nn.functional.leaky_relu(violation)
+        elif self.margin_activation == "hard_swish":
+            loss = torch.nn.functional.hardswish(violation)
+        elif self.margin_activation == "selu":
+            loss = torch.nn.functional.selu(violation)
+        elif self.margin_activation == "celu":
+            loss = torch.nn.functional.celu(violation)
+        elif self.margin_activation == "gelu":
+            loss = torch.nn.functional.gelu(violation)
+        elif self.margin_activation == "silu":
+            loss = torch.nn.functional.silu(violation)
+        elif self.margin_activation == "mish":
+            loss = torch.nn.functional.mish(violation)
 
         return {
             "loss": {
