@@ -32,9 +32,8 @@ def calc_recall_at_k(T, Y, k):
 
 
 def get_recall(x, y, ds_name):
-    k_list = [1]
-    y = torch.Tensor(y)
-    x = torch.Tensor(x)
+    y = torch.Tensor(y) # label
+    x = torch.Tensor(x) # embedding
 
     if ds_name == "CUB":
         k_list = [1, 2, 4, 8]
@@ -43,7 +42,8 @@ def get_recall(x, y, ds_name):
 
     dist_m = x @ x.T
 
-    y_cur = y[dist_m.topk(1+max(k_list), largest=True)[1][:, 1:]]
+    # 자신을 포함해서 top-k를 뽑고, slicing으로 자신을 제외
+    y_pred = y[dist_m.topk(1+max(k_list), largest=True)[1][:, 1:]]
 
-    recall = [calc_recall_at_k(y, y_cur, k) for k in k_list]
+    recall = [calc_recall_at_k(y, y_pred, k) for k in k_list]
     return recall, k_list

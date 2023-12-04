@@ -16,7 +16,7 @@
       "type": "python",
       "request": "launch",
       "module": "src.baselines.epshn.epshn",
-      "justMyCode": false
+      "justMyCode": true
     },
     {
       "name": "Calculate Mean and Std",
