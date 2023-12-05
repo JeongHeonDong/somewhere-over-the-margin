@@ -1,3 +1,4 @@
+import argparse
 import os
 import shutil
 import logging
@@ -23,8 +24,18 @@ from src.utils.dataset.cub import CUB
 from src.utils.accuracy import CustomAccuracyCalculator
 from src.losses.tripletMarginLoss import TripletMarginLoss
 
+# Preliminary: Get the argument
+# e.g. (In slurm) python -m src.base --activation gelu --trial base1
+parser = argparse.ArgumentParser(description="Select the option to train model.")
+parser.add_argument('--activation', type=str, required=True,
+                    help='hard_swish, selu, celu, gelu, silu, mish')
+parser.add_argument('--trial', type=str, required=True,
+                    help='Set the trial name with anything')
+args = parser.parse_args()
+logging.info(args)
+
 # 0. Set the path, log, and device
-trial_name = "base"  # you can change this to whatever you want.
+trial_name = args.trial  # you can change this to whatever you want.
 base_dir = f"results/{trial_name}"
 if os.path.exists(base_dir):
     shutil.rmtree(base_dir)
@@ -136,7 +147,7 @@ else:
 distance = distances.LpDistance(normalize_embeddings=True, p=2, power=1)
 reducer = reducers.MeanReducer()
 loss_fn = TripletMarginLoss(
-    margin=0.1, distance=distance, reducer=reducer, margin_activation="relu")
+    margin=0.1, distance=distance, reducer=reducer, margin_activation=args.activiation)
 
 sampler = samplers.MPerClassSampler(
     train_dataset.classes, m=4, length_before_new_iter=len(train_dataset)
