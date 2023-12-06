@@ -23,6 +23,7 @@ from src.utils.dataset.cub import CUB
 
 from src.utils.accuracy import CustomAccuracyCalculator
 from src.losses.tripletMarginLoss import TripletMarginLoss
+from src.losses.liftedStructureLoss import LiftedStructureLoss
 
 # Preliminary: Get the argument
 # e.g. (In slurm) python -m src.base --activation gelu --trial base1
@@ -49,7 +50,6 @@ logging.info("Cuda available: {}".format(torch.cuda.is_available()))
 writer = SummaryWriter(tensorboard_path)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-batch_size = 128
 
 # 1. Set the dataset, dataloader
 dataset = "CUB"  # "CUB", "SOP", "MNIST
@@ -127,15 +127,15 @@ if dataset == "MNIST":
     embedder_optimizer = optim.Adam(embedder.parameters(), lr=1e-2)
 
 else:
-    trunk = torchvision.models.resnet18(pretrained=True)
+    trunk = torchvision.models.resnet50(pretrained=True)
     trunk_output_size = trunk.fc.in_features
     trunk.fc = nn.Identity()
     trunk.to(device)
 
     embedder = nn.Sequential(
-        nn.Linear(trunk_output_size, 128),
+        nn.Linear(trunk_output_size, 256),
         nn.ReLU(),
-        nn.Linear(128, 64),
+        nn.Linear(256, 128),
     ).to(device)
 
     trunk_optimizer = torch.optim.Adam(
@@ -144,16 +144,19 @@ else:
         embedder.parameters(), lr=1e-4, weight_decay=1e-4)
 
 # 3. Set the distance, reducer, loss, sampler, and miner
-distance = distances.LpDistance(normalize_embeddings=True, p=2, power=1)
-reducer = reducers.MeanReducer()
-loss_fn = TripletMarginLoss(
-    margin=0.1, distance=distance, reducer=reducer, margin_activation=args.activiation)
 
-sampler = samplers.MPerClassSampler(
-    train_dataset.classes, m=4, length_before_new_iter=len(train_dataset)
-)
-
-miner = miners.MultiSimilarityMiner(epsilon=0.1)
+if dataset == "MNIST":
+    distance = distances.CosineSimilarity()
+    reducer = reducers.ThresholdReducer(low=0)
+    loss_fn = TripletMarginLoss(margin=0.2, distance=distance, reducer=reducer)
+    sampler = None
+    miner = miners.TripletMarginMiner(margin=0.2, distance=distance, type_of_triplets="semihard")
+else:
+    distance = distances.CosineSimilarity()
+    reducer = reducers.ThresholdReducer(low=0)
+    loss_fn = LiftedStructureLoss(distance=distance, reducer=reducer)
+    sampler = None
+    miner = miners.TripletMarginMiner(margin=0.2, distance=distance, type_of_triplets="semihard")
 
 # 4. Set the tester
 if dataset == "MNIST":
@@ -164,6 +167,7 @@ if dataset == "MNIST":
         "recall_at_8",
     )
     knn_k = 8
+    batch_size = 128
 elif dataset == "CUB":
     metrics = (
         "recall_at_1",
@@ -172,6 +176,7 @@ elif dataset == "CUB":
         "recall_at_8",
     )
     knn_k = 8
+    batch_size = 128
 elif dataset == "SOP":
     metrics = (
         "recall_at_1",
@@ -179,6 +184,7 @@ elif dataset == "SOP":
         "recall_at_100",
     )
     knn_k = 100
+    batch_size = 128
 
 record_keeper, _, _ = logging_presets.get_record_keeper(
     logging_path, tensorboard_path)
@@ -206,14 +212,20 @@ def visualizer_hook(umapper, umap_embeddings, labels, split_name, keyname, epoch
 tester = testers.GlobalEmbeddingSpaceTester(
     accuracy_calculator=CustomAccuracyCalculator(include=metrics, k=knn_k),
     end_of_testing_hook=hooks.end_of_testing_hook,
-    batch_size=batch_size,
-    data_device=device,
+    batch_size=128,
     visualizer=umap.UMAP(),
     visualizer_hook=visualizer_hook,
 )
 
-test_interval = 1
-patience = 3
+if dataset == "MNIST":
+    test_interval = 1
+    patience = 3
+    num_epochs = 100
+else:
+    test_interval = 5
+    patience = 10
+    num_epochs = 1000
+
 end_of_epoch_hook = hooks.end_of_epoch_hook(
     tester, {"val": test_dataset}, model_path, test_interval, patience)
 
@@ -235,4 +247,4 @@ trainer = trainers.MetricLossOnly(
 
 # 6. Train
 if __name__ == "__main__":
-    trainer.train(num_epochs=100)
+    trainer.train(num_epochs=num_epochs)

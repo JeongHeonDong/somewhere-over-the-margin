@@ -17,6 +17,12 @@ class TripletMarginLoss(BaseMetricLossFunction):
             - relu (default)
             - soft_plus (log_sum_exp)
             - leaky_relu
+            - hard_swish
+            - selu
+            - celu
+            - gelu
+            - silu
+            - mish
     """
 
     def __init__(
