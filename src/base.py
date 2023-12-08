@@ -29,7 +29,7 @@ from src.losses.liftedStructureLoss import LiftedStructureLoss
 # e.g. (In slurm) python -m src.base --activation gelu --trial base1
 parser = argparse.ArgumentParser(description="Select the option to train model.")
 parser.add_argument('--activation', type=str, required=True,
-                    help='hard_swish, selu, celu, gelu, silu, mish')
+                    help='relu, soft_plus, leaky_relu, hard_swish, selu, celu, gelu, silu, mish')
 parser.add_argument('--trial', type=str, required=True,
                     help='Set the trial name with anything')
 args = parser.parse_args()
@@ -54,21 +54,17 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # 1. Set the dataset, dataloader
 dataset = "CUB"  # "CUB", "SOP", "MNIST
 if dataset == "CUB":
-    train_transform = transforms.Compose([
-        transforms.Resize(64),
-        transforms.RandomResizedCrop(
-            scale=(0.16, 1), ratio=(0.75, 1.33), size=64),
-        transforms.RandomHorizontalFlip(0.5),
-        transforms.ToTensor(),
-        transforms.Normalize((0.4707, 0.4601, 0.4549),
-                             (0.2767, 0.2760, 0.2850)),
-    ])
-    test_transform = transforms.Compose([
-        transforms.Resize((224, 224)),
-        transforms.ToTensor(),
-        transforms.Normalize((0.4707, 0.4601, 0.4549),
-                             (0.2767, 0.2760, 0.2850)),
-    ])
+    imgsize = 256
+    train_transform = transforms.Compose([transforms.Resize(int(imgsize*1.1)),
+                                                       transforms.RandomCrop(imgsize),
+                                                       transforms.RandomHorizontalFlip(),
+                                                       transforms.ToTensor(),
+                                                       transforms.Normalize((0.4707, 0.4601, 0.4549), (0.2767, 0.2760, 0.2850))])
+        
+    test_transform = transforms.Compose([transforms.Resize(imgsize),
+                                                    transforms.CenterCrop(imgsize),
+                                                    transforms.ToTensor(),
+                                                       transforms.Normalize((0.4707, 0.4601, 0.4549), (0.2767, 0.2760, 0.2850))])
     train_dataset = CUB(root="data/CUB_200_2011",
                         mode="train", transform=train_transform)
     test_dataset = CUB(root="data/CUB_200_2011",
@@ -127,15 +123,13 @@ if dataset == "MNIST":
     embedder_optimizer = optim.Adam(embedder.parameters(), lr=1e-2)
 
 else:
-    trunk = torchvision.models.resnet50(pretrained=True)
+    trunk = torchvision.models.resnet18(pretrained=True)
     trunk_output_size = trunk.fc.in_features
     trunk.fc = nn.Identity()
     trunk.to(device)
 
     embedder = nn.Sequential(
-        nn.Linear(trunk_output_size, 256),
-        nn.ReLU(),
-        nn.Linear(256, 128),
+        nn.Linear(trunk_output_size, 128),
     ).to(device)
 
     trunk_optimizer = torch.optim.Adam(
@@ -152,9 +146,9 @@ if dataset == "MNIST":
     sampler = None
     miner = miners.TripletMarginMiner(margin=0.2, distance=distance, type_of_triplets="semihard")
 else:
-    distance = distances.CosineSimilarity()
-    reducer = reducers.ThresholdReducer(low=0)
-    loss_fn = LiftedStructureLoss(distance=distance, reducer=reducer)
+    distance = distances.LpDistance(normalize_embeddings=True, p=2, power=1)
+    reducer = reducers.AvgNonZeroReducer()
+    loss_fn = TripletMarginLoss(margin=0.2, distance=distance, reducer=reducer, margin_activation=args.activation)
     sampler = None
     miner = miners.TripletMarginMiner(margin=0.2, distance=distance, type_of_triplets="semihard")
 
@@ -176,7 +170,7 @@ elif dataset == "CUB":
         "recall_at_8",
     )
     knn_k = 8
-    batch_size = 128
+    batch_size = 64
 elif dataset == "SOP":
     metrics = (
         "recall_at_1",
@@ -212,7 +206,7 @@ def visualizer_hook(umapper, umap_embeddings, labels, split_name, keyname, epoch
 tester = testers.GlobalEmbeddingSpaceTester(
     accuracy_calculator=CustomAccuracyCalculator(include=metrics, k=knn_k),
     end_of_testing_hook=hooks.end_of_testing_hook,
-    batch_size=128,
+    batch_size=32,
     visualizer=umap.UMAP(),
     visualizer_hook=visualizer_hook,
 )

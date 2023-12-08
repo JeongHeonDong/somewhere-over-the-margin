@@ -10,7 +10,7 @@
 #SBATCH --gres=gpu:2
 
 #### Select node (change nodelist at your circumstances)
-#SBATCH --nodelist=n9
+#SBATCH --nodelist=n1
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=6
@@ -37,7 +37,7 @@ SAMPLES_DIR=$HOME/somewhere-over-the-margin/
 cd $SAMPLES_DIR
 
 ### Modify this line when you want other jobs
-python -m src.examples.tripletMarginLossMNIST
+python -m src.base --activation gelu --trial base5
 
 date
 
