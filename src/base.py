@@ -216,8 +216,8 @@ if dataset == "MNIST":
     patience = 3
     num_epochs = 100
 else:
-    test_interval = 5
-    patience = 10
+    test_interval = 1
+    patience = 5
     num_epochs = 1000
 
 end_of_epoch_hook = hooks.end_of_epoch_hook(
