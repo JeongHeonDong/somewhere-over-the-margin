@@ -1,4 +1,5 @@
 import argparse
+import random
 import os
 import shutil
 import logging
@@ -32,6 +33,8 @@ parser.add_argument('--activation', type=str, required=True,
                     help='hard_swish, selu, celu, gelu, silu, mish')
 parser.add_argument('--trial', type=str, required=True,
                     help='Set the trial name with anything')
+parser.add_argument('--seed', type=int, default=1225, required=False, help='Set the seed')
+
 args = parser.parse_args()
 logging.info(args)
 
@@ -51,44 +54,72 @@ writer = SummaryWriter(tensorboard_path)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+random.seed(args.seed)
+np.random.seed(args.seed)
+torch.manual_seed(args.seed)
+torch.cuda.manual_seed_all(args.seed)
+
+
 # 1. Set the dataset, dataloader
 dataset = "CUB"  # "CUB", "SOP", "MNIST
 if dataset == "CUB":
-    train_transform = transforms.Compose([
-        transforms.Resize(64),
-        transforms.RandomResizedCrop(
-            scale=(0.16, 1), ratio=(0.75, 1.33), size=64),
-        transforms.RandomHorizontalFlip(0.5),
-        transforms.ToTensor(),
-        transforms.Normalize((0.4707, 0.4601, 0.4549),
-                             (0.2767, 0.2760, 0.2850)),
-    ])
-    test_transform = transforms.Compose([
-        transforms.Resize((224, 224)),
-        transforms.ToTensor(),
-        transforms.Normalize((0.4707, 0.4601, 0.4549),
-                             (0.2767, 0.2760, 0.2850)),
-    ])
+    # train_transform = transforms.Compose([
+    #     transforms.Resize(64),
+    #     transforms.RandomResizedCrop(
+    #         scale=(0.16, 1), ratio=(0.75, 1.33), size=64),
+    #     transforms.RandomHorizontalFlip(0.5),
+    #     transforms.ToTensor(),
+    #     transforms.Normalize((0.4707, 0.4601, 0.4549),
+    #                          (0.2767, 0.2760, 0.2850)),
+    # ])
+    # test_transform = transforms.Compose([
+    #     transforms.Resize((224, 224)),
+    #     transforms.ToTensor(),
+    #     transforms.Normalize((0.4707, 0.4601, 0.4549),
+    #                          (0.2767, 0.2760, 0.2850)),
+    # ])
+    imgsize = 256
+    train_transform = transforms.Compose([transforms.Resize(int(imgsize*1.1)),
+                                                       transforms.RandomCrop(imgsize),
+                                                       transforms.RandomHorizontalFlip(),
+                                                       transforms.ToTensor(),
+                                                       transforms.Normalize((0.4707, 0.4601, 0.4549), (0.2767, 0.2760, 0.2850))])
+        
+    test_transform = transforms.Compose([transforms.Resize(imgsize),
+                                                    transforms.CenterCrop(imgsize),
+                                                    transforms.ToTensor(),
+                                                       transforms.Normalize((0.4707, 0.4601, 0.4549), (0.2767, 0.2760, 0.2850))])
     train_dataset = CUB(root="data/CUB_200_2011",
                         mode="train", transform=train_transform)
     test_dataset = CUB(root="data/CUB_200_2011",
                        mode="eval", transform=test_transform)
 elif dataset == "SOP":
-    train_transform = transforms.Compose([
-        transforms.Resize(64),
-        transforms.RandomResizedCrop(
-            scale=(0.16, 1), ratio=(0.75, 1.33), size=64),
-        transforms.RandomHorizontalFlip(0.5),
-        transforms.ToTensor(),
-        transforms.Normalize((0.5807, 0.5396, 0.5044),
-                             (0.2901, 0.2974, 0.3095)),
-    ])
-    test_transform = transforms.Compose([
-        transforms.Resize(64),
-        transforms.ToTensor(),
-        transforms.Normalize((0.5807, 0.5396, 0.5044),
-                             (0.2901, 0.2974, 0.3095)),
-    ])
+    # train_transform = transforms.Compose([
+    #     transforms.Resize(64),
+    #     transforms.RandomResizedCrop(
+    #         scale=(0.16, 1), ratio=(0.75, 1.33), size=64),
+    #     transforms.RandomHorizontalFlip(0.5),
+    #     transforms.ToTensor(),
+    #     transforms.Normalize((0.5807, 0.5396, 0.5044),
+    #                          (0.2901, 0.2974, 0.3095)),
+    # ])
+    # test_transform = transforms.Compose([
+    #     transforms.Resize(64),
+    #     transforms.ToTensor(),
+    #     transforms.Normalize((0.5807, 0.5396, 0.5044),
+    #                          (0.2901, 0.2974, 0.3095)),
+    # ])
+    imgsize = 256
+    train_transform = transforms.Compose([transforms.Resize(int(imgsize*1.1)),
+                                                       transforms.RandomCrop(imgsize),
+                                                       transforms.RandomHorizontalFlip(),
+                                                       transforms.ToTensor(),
+                                                       transforms.Normalize((0.5807, 0.5396, 0.5044), (0.2901, 0.2974, 0.3095))])
+        
+    test_transform = transforms.Compose([transforms.Resize(imgsize),
+                                                    transforms.CenterCrop(imgsize),
+                                                    transforms.ToTensor(),
+                                                       transforms.Normalize((0.5807, 0.5396, 0.5044), (0.2901, 0.2974, 0.3095))])
     train_dataset = SOP(root="data/SOP",
                         mode="train", transform=train_transform)
     test_dataset = SOP(root="data/SOP",
@@ -119,7 +150,7 @@ if dataset == "MNIST":
     trunk.to(device)
 
     embedder = nn.Sequential(
-        nn.Linear(9216, 128),
+        nn.Linear(9216, 64),
     )
     embedder.to(device)
 
@@ -127,15 +158,13 @@ if dataset == "MNIST":
     embedder_optimizer = optim.Adam(embedder.parameters(), lr=1e-2)
 
 else:
-    trunk = torchvision.models.resnet50(pretrained=True)
+    trunk = torchvision.models.resnet18(pretrained=True)
     trunk_output_size = trunk.fc.in_features
     trunk.fc = nn.Identity()
     trunk.to(device)
 
     embedder = nn.Sequential(
-        nn.Linear(trunk_output_size, 256),
-        nn.ReLU(),
-        nn.Linear(256, 128),
+        nn.Linear(trunk_output_size, 64),
     ).to(device)
 
     trunk_optimizer = torch.optim.Adam(
@@ -148,16 +177,31 @@ else:
 if dataset == "MNIST":
     distance = distances.CosineSimilarity()
     reducer = reducers.ThresholdReducer(low=0)
-    loss_fn = TripletMarginLoss(margin=0.2, distance=distance, reducer=reducer)
+    loss_fn = TripletMarginLoss(margin=0.2, distance=distance, reducer=reducer, margin_activation="no")
     sampler = None
     miner = miners.TripletMarginMiner(margin=0.2, distance=distance, type_of_triplets="semihard")
 else:
-    distance = distances.CosineSimilarity()
+    # distance = distances.CosineSimilarity()
     reducer = reducers.ThresholdReducer(low=0)
-    loss_fn = LiftedStructureLoss(distance=distance, reducer=reducer)
-    sampler = None
-    miner = miners.TripletMarginMiner(margin=0.2, distance=distance, type_of_triplets="semihard")
-
+    # loss_fn = TripletMarginLoss(margin=0.1, distance=distance, reducer=reducer)
+    distance = distances.LpDistance(normalize_embeddings=True)
+    loss_fn = TripletMarginLoss(margin=0.2, distance=distance, margin_activation=args.activation)
+    # loss_fn = LiftedStructureLoss(margin_activation=args.activation)
+    import src.baselines.epshn.sampler as epshn_sampler
+    intervals = []
+    start = -1
+    cur_cls = -1
+    for idx, y in enumerate(train_dataset.ys):
+        if y != cur_cls:
+            if start != -1:
+                intervals.append((start, idx - 1))
+            start = idx
+            cur_cls = y
+    intervals.append((start, len(train_dataset.ys) - 1))
+    sampler = epshn_sampler.BalanceSampler_filled(intervals, GSize=16)
+    # miner = miners.BatchEasyHardMiner(pos_strategy="easy", neg_strategy="semihard")
+    # miner = miners.TripletMarginMiner(margin=0.2, distance=distance, type_of_triplets="semihard")
+    miner = None
 # 4. Set the tester
 if dataset == "MNIST":
     metrics = (
@@ -184,7 +228,7 @@ elif dataset == "SOP":
         "recall_at_100",
     )
     knn_k = 100
-    batch_size = 128
+    batch_size = 64
 
 record_keeper, _, _ = logging_presets.get_record_keeper(
     logging_path, tensorboard_path)
@@ -212,7 +256,7 @@ def visualizer_hook(umapper, umap_embeddings, labels, split_name, keyname, epoch
 tester = testers.GlobalEmbeddingSpaceTester(
     accuracy_calculator=CustomAccuracyCalculator(include=metrics, k=knn_k),
     end_of_testing_hook=hooks.end_of_testing_hook,
-    batch_size=128,
+    batch_size=16,
     visualizer=umap.UMAP(),
     visualizer_hook=visualizer_hook,
 )
@@ -222,9 +266,9 @@ if dataset == "MNIST":
     patience = 3
     num_epochs = 100
 else:
-    test_interval = 5
-    patience = 10
-    num_epochs = 1000
+    test_interval = 1
+    patience = 5
+    num_epochs = 200
 
 end_of_epoch_hook = hooks.end_of_epoch_hook(
     tester, {"val": test_dataset}, model_path, test_interval, patience)
@@ -234,7 +278,7 @@ trainer = trainers.MetricLossOnly(
     models={"trunk": trunk, "embedder": embedder},
     batch_size=batch_size,
     sampler=sampler,
-    mining_funcs={"tuple_miner": miner},
+    mining_funcs={"tuple_miner": miner} if miner is not None else None,
     loss_funcs={"metric_loss": loss_fn},
     optimizers={
         "trunk_optimizer": trunk_optimizer,

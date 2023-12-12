@@ -9,6 +9,10 @@
       "type": "python",
       "request": "launch",
       "module": "src.base",
+      "args": [
+        "--activation", "relu",
+        "--trial", "test",
+      ],
       "justMyCode": true
     },
     {

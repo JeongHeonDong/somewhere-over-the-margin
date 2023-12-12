@@ -66,6 +66,8 @@ class LiftedStructureLoss(GenericPairLoss):
                 loss_per_pos_pair = torch.nn.functional.silu(loss_per_pos_pair)
             elif self.margin_activation == "mish":
                 loss_per_pos_pair = torch.nn.functional.mish(loss_per_pos_pair)
+            else:
+                pass
             loss_per_pos_pair = loss_per_pos_pair ** 2
             loss_per_pos_pair /= (
                 2  # divide by 2 since each positive pair will be counted twice
