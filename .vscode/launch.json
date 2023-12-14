@@ -5,13 +5,23 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Python: Current File",
+      "type": "python",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
       "name": "Base",
       "type": "python",
       "request": "launch",
       "module": "src.base",
       "args": [
-        "--activation", "relu",
-        "--trial", "test",
+        "--activation",
+        "soft_plus",
+        "--trial",
+        "test",
       ],
       "justMyCode": true
     },

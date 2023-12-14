@@ -182,10 +182,10 @@ if dataset == "MNIST":
     miner = miners.TripletMarginMiner(margin=0.2, distance=distance, type_of_triplets="semihard")
 else:
     # distance = distances.CosineSimilarity()
-    reducer = reducers.ThresholdReducer(low=0)
+    reducer = reducers.MeanReducer()
     # loss_fn = TripletMarginLoss(margin=0.1, distance=distance, reducer=reducer)
-    distance = distances.LpDistance(normalize_embeddings=True)
-    loss_fn = TripletMarginLoss(margin=0.2, distance=distance, margin_activation=args.activation)
+    distance = distances.CosineSimilarity()
+    loss_fn = TripletMarginLoss(margin=0.1, distance=distance, reducer=reducer, margin_activation=args.activation)
     # loss_fn = LiftedStructureLoss(margin_activation=args.activation)
     import src.baselines.epshn.sampler as epshn_sampler
     intervals = []
@@ -201,6 +201,7 @@ else:
     sampler = epshn_sampler.BalanceSampler_filled(intervals, GSize=16)
     # miner = miners.BatchEasyHardMiner(pos_strategy="easy", neg_strategy="semihard")
     # miner = miners.TripletMarginMiner(margin=0.2, distance=distance, type_of_triplets="semihard")
+    # miner = miners.BatchEasyHardMiner(pos_strategy="hard", neg_strategy="all", distance=distance)
     miner = None
 # 4. Set the tester
 if dataset == "MNIST":
@@ -277,7 +278,7 @@ end_of_epoch_hook = hooks.end_of_epoch_hook(
 trainer = trainers.MetricLossOnly(
     models={"trunk": trunk, "embedder": embedder},
     batch_size=batch_size,
-    sampler=sampler,
+    sampler=None,
     mining_funcs={"tuple_miner": miner} if miner is not None else None,
     loss_funcs={"metric_loss": loss_fn},
     optimizers={
