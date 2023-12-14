@@ -1,5 +1,6 @@
 import argparse
 import os
+import random
 import shutil
 import logging
 
@@ -32,6 +33,7 @@ parser.add_argument('--activation', type=str, required=True,
                     help='relu, soft_plus, leaky_relu, hard_swish, selu, celu, gelu, silu, mish')
 parser.add_argument('--trial', type=str, required=True,
                     help='Set the trial name with anything')
+parser.add_argument('--seed', type=int, default=1225, required=False, help='Set the seed')
 args = parser.parse_args()
 logging.info(args)
 
@@ -50,6 +52,11 @@ logging.info("Cuda available: {}".format(torch.cuda.is_available()))
 writer = SummaryWriter(tensorboard_path)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+random.seed(args.seed)
+np.random.seed(args.seed)
+torch.manual_seed(args.seed)
+torch.cuda.manual_seed_all(args.seed)
 
 # 1. Set the dataset, dataloader
 dataset = "CUB"  # "CUB", "SOP", "MNIST
@@ -123,13 +130,13 @@ if dataset == "MNIST":
     embedder_optimizer = optim.Adam(embedder.parameters(), lr=1e-2)
 
 else:
-    trunk = torchvision.models.resnet18(pretrained=True)
+    trunk = torchvision.models.resnet50(pretrained=True)
     trunk_output_size = trunk.fc.in_features
     trunk.fc = nn.Identity()
     trunk.to(device)
 
     embedder = nn.Sequential(
-        nn.Linear(trunk_output_size, 128),
+        nn.Linear(trunk_output_size, 64),
     ).to(device)
 
     trunk_optimizer = torch.optim.Adam(
@@ -146,11 +153,12 @@ if dataset == "MNIST":
     sampler = None
     miner = miners.TripletMarginMiner(margin=0.2, distance=distance, type_of_triplets="semihard")
 else:
-    distance = distances.LpDistance(normalize_embeddings=True, p=2, power=1)
-    reducer = reducers.AvgNonZeroReducer()
+    distance = distances.CosineSimilarity()
+    reducer = reducers.MeanReducer()
     loss_fn = TripletMarginLoss(margin=0.2, distance=distance, reducer=reducer, margin_activation=args.activation)
     sampler = None
-    miner = miners.TripletMarginMiner(margin=0.2, distance=distance, type_of_triplets="semihard")
+    #miner = miners.TripletMarginMiner(margin=0.2, distance=distance, type_of_triplets="semihard")
+    miner = miners.BatchEasyHardMiner(allowed_pos_range=(0.2, 1), allowed_neg_range=(0.2, 1), distance=distance)
 
 # 4. Set the tester
 if dataset == "MNIST":
@@ -170,7 +178,7 @@ elif dataset == "CUB":
         "recall_at_8",
     )
     knn_k = 8
-    batch_size = 64
+    batch_size = 40
 elif dataset == "SOP":
     metrics = (
         "recall_at_1",
@@ -218,7 +226,7 @@ if dataset == "MNIST":
 else:
     test_interval = 1
     patience = 5
-    num_epochs = 1000
+    num_epochs = 200
 
 end_of_epoch_hook = hooks.end_of_epoch_hook(
     tester, {"val": test_dataset}, model_path, test_interval, patience)
