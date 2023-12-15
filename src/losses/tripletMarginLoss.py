@@ -76,6 +76,8 @@ class TripletMarginLoss(BaseMetricLossFunction):
             loss = torch.nn.functional.silu(violation)
         elif self.margin_activation == "mish":
             loss = torch.nn.functional.mish(violation)
+        else:
+            loss = violation
 
         return {
             "loss": {

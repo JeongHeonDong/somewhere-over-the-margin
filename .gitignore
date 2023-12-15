@@ -1,6 +1,16 @@
-results
 __pycache__
 data/*
 !data/README.md
 *.err
 *.out
+.ipynb_checkpoints/
+!results/
+results/*
+!results/batch_easy_hard_miner/
+# results/batch_easy_hard_miner/*/logs
+results/batch_easy_hard_miner/*/saved_models
+results/batch_easy_hard_miner/*/*.png
+!results/no_miner/
+#results/no_miner/*/logs
+results/no_miner/*/saved_models
+results/no_miner/*/*.png
